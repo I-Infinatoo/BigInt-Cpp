@@ -53,7 +53,7 @@ class bigInt {
     bool operator != (const bigInt &) const;
 
     bigInt operator + (const bigInt &);
-    bigInt operator = (const bigInt &);
+    bigInt operator - (const bigInt &);
     bigInt operator * (const bigInt &);
     bigInt operator / (const bigInt &);
     bigInt operator += (const bigInt &);
@@ -108,8 +108,19 @@ std::ostream& operator << (std::ostream &stream, bigInt &obj) {
 
 bigInt bigInt::operator + (const bigInt &obj) {
     
+
     bigInt result = *this > obj ? *this : obj;
     int k = 0;
+
+    // if both have negative sign, then add them having negative sign
+    if(this->sign == -1 && obj.sign == -1) {
+        result.sign = -1;
+    }
+
+    // if any one number is negative, then (big-small) with the sign of big  
+    if(this->sign == -1 || obj.sign == -1) {
+        return *this - obj;
+    }
 
     int carry = 0;
     int n = this->vec.size(), i = 0;
@@ -155,6 +166,58 @@ bigInt bigInt::operator += (const bigInt &obj) {
 
     return *this;   
 }
+
+
+// for - operator
+
+// case1 : both are +ve, then big - small with big's sign
+// case2 : if one is -ve and other is +ve : 
+            // 1. this is -ve : it can be small or big
+            // 2. obj is -ve : it can be small or big
+// case3 : if both are -ve:
+            // 1. this is big, sign of this
+            // 2. obj is big, sign of obj
+bigInt bigInt::operator - (const bigInt &obj) {
+
+    bool isThisBig = *this > obj;
+
+    bigInt result = isThisBig ? *this : obj;
+    bigInt smallNum = isThisBig ? obj : *this;
+
+    int i = 0;
+    int n = result.vec.size();
+
+    int j = 0;
+    int m = smallNum.vec.size();
+
+    int loan = 0;
+    while(i<n && j<m) {
+        int diff = result.vec[i] - smallNum.vec[j] - loan;
+
+        if(diff < 0) {
+            result.vec[i] = diff + base;
+            loan = 1;
+        } else  {
+            result.vec[i] = diff;
+            loan = 0;
+        }
+        i++, j++;
+    }
+    while(i<n) {
+         int diff = result.vec[i] - loan;
+
+        if(diff < 0) {
+            result.vec[i] = diff + base;
+            loan = 1;
+        } else  {
+            result.vec[i] = diff;
+            loan = 0;
+        }
+        i++;
+    }
+
+    return result;
+}  
 
 bool bigInt::operator < (const bigInt &obj) const {
     
