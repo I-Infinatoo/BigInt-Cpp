@@ -108,10 +108,9 @@ std::ostream& operator << (std::ostream &stream, bigInt &obj) {
 
 bigInt bigInt::operator + (const bigInt &obj) {
     
-    bool isThisBig = abs(*this) > abs(obj);   //use abs()
+    bool isThisBig = abs(*this) >= abs(obj);   //use abs()
     
-    bigInt result;
-    result = isThisBig ? *this : obj; //use abs() while checking 
+    bigInt result = isThisBig ? *this : obj; //use abs() while checking 
     
     int k = 0;
 
@@ -199,10 +198,8 @@ bigInt bigInt::operator += (const bigInt &obj) {
             // 2. obj is big, sign of obj
 bigInt bigInt::operator - (const bigInt &obj) {
 
-    bool isThisBig = abs(*this) > abs(obj);   //use abs()
+    bool isThisBig = abs(*this) >= abs(obj);   //use abs()
 
-    bigInt result;
-    bigInt smallNum;
     bigInt result = isThisBig ? *this : obj;
     bigInt smallNum = isThisBig ? obj : *this;
     
@@ -272,6 +269,16 @@ bigInt bigInt::operator - (const bigInt &obj) {
 
     return result;
 }  
+
+bigInt bigInt::operator -= (const bigInt &obj) {
+    bigInt result = *this - obj;
+    
+    this->sign = result.sign;
+    this->vec = result.vec;
+
+    return *this;   
+}
+
 
 bool bigInt::operator < (const bigInt &obj) const {
     
