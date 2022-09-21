@@ -31,7 +31,7 @@ class bigInt {
     void readFromNum(long long &);
     std::string to_string(std::vector<int> &);
     int reverse_num(int) const;
-
+    bigInt abs(const bigInt &);
     
     //-------------- overloaded operators ---------------//
 
@@ -108,8 +108,11 @@ std::ostream& operator << (std::ostream &stream, bigInt &obj) {
 
 bigInt bigInt::operator + (const bigInt &obj) {
     
-
-    bigInt result = *this > obj ? *this : obj;
+    bool isThisBig = abs(*this) > abs(obj);   //use abs()
+    
+    bigInt result;
+    result = isThisBig ? *this : obj; //use abs() while checking 
+    
     int k = 0;
 
     // if both have negative sign, then add them having negative sign
@@ -117,9 +120,26 @@ bigInt bigInt::operator + (const bigInt &obj) {
         result.sign = -1;
     }
 
-    // if any one number is negative, then (big-small) with the sign of big  
-    if(this->sign == -1 || obj.sign == -1) {
-        return *this - obj;
+    // if obj is -ve
+    else if(obj.sign == -1) {
+        result = obj;
+        result.sign = 1;
+
+        result = *this - result;
+        result.sign = isThisBig ? 1 : -1;
+        return result;
+    }     
+
+    // if this is -ve
+    else if(this->sign == -1) {
+        // result = isThisBig ? *this : obj;
+        bigInt temp = isThisBig ? obj : *this;
+
+        result.sign = temp.sign = 1;
+        result = result - temp;
+        result.sign = isThisBig ? -1 : 1;
+
+        return result;
     }
 
     int carry = 0;
@@ -179,10 +199,44 @@ bigInt bigInt::operator += (const bigInt &obj) {
             // 2. obj is big, sign of obj
 bigInt bigInt::operator - (const bigInt &obj) {
 
-    bool isThisBig = *this > obj;
+    bool isThisBig = abs(*this) > abs(obj);   //use abs()
 
+    bigInt result;
+    bigInt smallNum;
     bigInt result = isThisBig ? *this : obj;
     bigInt smallNum = isThisBig ? obj : *this;
+    
+    // if both have same  +ve  sign
+    if(this->sign == 1 && obj.sign == 1) {
+        result.sign = isThisBig ? 1 : -1;
+    }
+
+
+    // if obj is  -ve  
+    else if (obj.sign == -1) {
+
+        // eg: -2 - (-3)    || -3 - (-2)    || 2 - (-3)    || 3 - (-2)
+        //  => -2 + (+3)    || -3 + (+2)    || 2 + (+3)    || 3 + (+2)
+
+        result = obj;
+        result.sign = 1;
+        result = *this + result; 
+        return result;
+    }
+
+    // if this is +ve    
+    else if(this->sign == -1) {
+
+        // eg: -2 - (3)         || -3 -(2)
+        // =>  2 + 3  = 5       || 3 + 2 = 5
+        // =>  (-)5             || (-)5
+
+        result.sign = smallNum.sign =1;
+        result = result + smallNum;
+
+        result.sign = -1;
+        return result;
+    } 
 
     int i = 0;
     int n = result.vec.size();
@@ -319,6 +373,12 @@ bigInt::bigInt(const bigInt &obj) {
 }
 
 //-------------- functions -----------------//
+
+bigInt bigInt::abs(const bigInt &obj) {
+    bigInt result = obj;
+    result.sign = 1;
+    return result;
+}
 
 int bigInt::reverse_num(int num) const{
     int revNum = 0;
@@ -494,8 +554,8 @@ int main () {
     std::cout << "(num1 + num2): " << num3 << "\n";
 
     // bigInt  a( (long long)1 );           ---> not working
-    num1+=num2;
-    std::cout << "num1: " << num1 << "\n"; 
+    // num1+=num2;
+    // std::cout << "num1: " << num1 << "\n"; 
 
 
     // bigInt num1 = -2345689;
